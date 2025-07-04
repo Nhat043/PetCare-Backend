@@ -45,6 +45,8 @@ def products_routers(app, prefix, cors=None):
     def get_product(product_id):
         product_service = ProductService()
         product = product_service.get_product(product_id)
+        if product is None:
+            return Response(status_code=404, body={"error": "Product not found"})
         return Response(
             body={
                 "product": serialize_product(ProductBaseSchema(**product).model_dump())
@@ -62,10 +64,16 @@ def products_routers(app, prefix, cors=None):
                 body={"error": "Invalid input", "details": e.errors()}, status_code=400
             )
         product = product_service.create_product(schema.model_dump())
-        if not product:
-            return Response(body={"error": "Product already exists"}, status_code=400)
+        if product is None:
+            return Response(body={"error": "Product created failed"}, status_code=400)
+        return Response(body={"product_id": product}, status_code=201)
+
+    @app.route(f"{prefix}/{{product_id}}", methods=["DELETE"], cors=cors)
+    def delete_product(product_id):
+        product_service = ProductService()
+        product = product_service.delete_product(product_id)
+        if product is None:
+            return Response(status_code=404, body={"error": "Product not found"})
         return Response(
-            body={
-                "product": serialize_product(ProductBaseSchema(**product).model_dump())
-            }
+            status_code=204, body={"message": "Product deleted successfully"}
         )

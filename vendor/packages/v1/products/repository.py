@@ -48,10 +48,9 @@ class ProductRepository:
     def create_product(self, product: dict):
         query = """
             INSERT INTO products (name, description, price, stock, category_id, status_id, image_url) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s) 
-            RETURNING product_id, name, description, price, stock, category_id, status_id, image_url, created_at, updated_at
+            VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING product_id
         """
-        result = self.db.execute_query_dict(
+        result = self.db.execute_query_dict_returning(
             query,
             (
                 product["name"],
@@ -63,4 +62,9 @@ class ProductRepository:
                 product.get("image_url"),
             ),
         )
-        return result[0] if result else None
+        print("result", result)
+        return result[0]["product_id"] if result else None
+
+    def delete_product(self, product_id: int):
+        query = "UPDATE products SET status_id = 2 WHERE product_id = %s"
+        return self.db.execute_query(query, (product_id,))
