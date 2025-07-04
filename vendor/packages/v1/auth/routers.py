@@ -31,7 +31,13 @@ def auth_routers(app, prefix, cors=None):
         if not user:
             return Response(body={"error": "Invalid credentials"}, status_code=401)
         else:
-            return Response(body={"message": "Login successful"})
+            return Response(
+                body={
+                    "message": "Login successful",
+                    "user_id": user["user_id"],
+                    "role_id": user["role_id"],
+                }
+            )
 
     @app.route(f"{prefix}", methods=["POST"], cors=cors)
     def create_user():

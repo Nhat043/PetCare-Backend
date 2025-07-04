@@ -129,6 +129,16 @@ class Database:
                 return [dict(zip(columns, row)) for row in cursor.fetchall()]
             return []
 
+    def execute_query_dict_returning(
+        self, query: str, params: Optional[tuple] = None
+    ) -> List[Dict[str, Any]]:
+        with self.get_sync_cursor() as cursor:
+            cursor.execute(query, params)
+            if cursor.description:  # Handles SELECT and INSERT ... RETURNING
+                columns = [desc[0] for desc in cursor.description]
+                return [dict(zip(columns, row)) for row in cursor.fetchall()]
+            return []
+
     async def execute_async_query(
         self, query: str, params: Optional[tuple] = None
     ) -> list:

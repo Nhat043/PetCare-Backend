@@ -17,3 +17,9 @@ class ProductService:
 
     def get_products_paginated(self, page: int = 1, limit: int = 10):
         return self.repo.get_products_paginated(page=page, limit=limit)
+
+    def delete_product(self, product_id: int):
+        product = self.get_product(product_id)
+        if product is None:
+            return None
+        return self.repo.delete_product(product_id)
