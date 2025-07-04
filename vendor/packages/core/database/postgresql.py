@@ -8,7 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class PostgreSQLConnection:
+class Database:
     """
     PostgreSQL connection class that provides both synchronous and asynchronous connections.
     Uses environment variable DATABASE_URL for connection string.
@@ -212,16 +212,16 @@ class PostgreSQLConnection:
 
 
 # Global instance for easy access
-postgres_db = PostgreSQLConnection()
+postgres_db = Database()
 
 
 # Convenience functions for easy usage
-def get_db_connection() -> PostgreSQLConnection:
+def get_db_connection() -> Database:
     """
     Get the global database connection instance.
 
     Returns:
-        PostgreSQLConnection instance
+        Database instance
     """
     return postgres_db
 
