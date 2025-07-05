@@ -24,6 +24,10 @@ class PostCreateSchema(BaseModel):
     status_id: int = 1
 
 
+class PostImageSchema(BaseModel):
+    image_url: str
+
+
 def serialize_post(post):
     post = dict(post)
     for k, v in post.items():
