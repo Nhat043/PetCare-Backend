@@ -5,10 +5,17 @@
     "dev": {
       "api_gateway_stage": "api",
       "environment_variables": {
-        "DATABASE_URL": "postgresql://postgres.emjhisvkycbxckobfilk:PetCare123456789@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
+        "DATABASE_URL": "postgresql://postgres.emjhisvkycbxckobfilk:PetCare123456789@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres",
+        "AWS_BUCKET_NAME": "aws-petcare-image"
       },
       "layers": [
         "arn:aws:lambda:ap-southeast-2:770693421928:layer:Klayers-p312-psycopg2-binary:1"
+      ],
+      "iam_policy_file": "policy-dev.json",
+      "binary_types": [
+        "multipart/form-data",
+        "application/octet-stream",
+        "image/*"
       ]
     },
     "deployment_package": {
