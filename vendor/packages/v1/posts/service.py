@@ -28,9 +28,6 @@ class PostService:
     def get_post(self, post_id: int):
         return self.repo.get_post(post_id)
 
-    def get_posts_paginated(self, page: int = 1, limit: int = 10):
-        return self.repo.get_posts_paginated(page, limit)
-
     def get_total_posts(self):
         return self.repo.get_total_posts()
 

@@ -4,6 +4,8 @@ import base64
 from packages.v1.posts.service import PostService
 from packages.v1.posts.schemas import (
     PostBaseSchema,
+    PostResponseSchema,
+    PostSingleResponseSchema,
     PostCreateSchema,
     PostImageSchema,
     serialize_post,
@@ -42,7 +44,7 @@ def posts_routers(app, prefix, cors=None):
         return Response(
             body={
                 "posts": [
-                    serialize_post(PostBaseSchema(**post).model_dump())
+                    serialize_post(PostResponseSchema(**post).model_dump())
                     for post in result["posts"]
                 ],
                 "pagination": {
@@ -64,7 +66,7 @@ def posts_routers(app, prefix, cors=None):
         if post is None:
             return Response(status_code=404, body={"error": "Post not found"})
         return Response(
-            body={"post": serialize_post(PostBaseSchema(**post).model_dump())}
+            body={"post": serialize_post(PostResponseSchema(**post).model_dump())}
         )
 
     @app.route(f"{prefix}", methods=["POST"], cors=cors)
