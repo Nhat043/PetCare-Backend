@@ -57,7 +57,10 @@ class PostRepository:
                 p.status_id, 
                 p.created_at, 
                 p.updated_at,
-                COALESCE(AVG(r.rating), 0) as average_rating,
+                CASE 
+                    WHEN COUNT(r.rating_id) = 0 THEN 5
+                    ELSE COALESCE(AVG(r.rating), 5)
+                END as average_rating,
                 COUNT(r.rating_id) as review_count
             FROM posts p
             LEFT JOIN rating r ON p.post_id = r.entity_id AND r.entity_type = 'post' AND r.status_id = 1
@@ -97,7 +100,10 @@ class PostRepository:
                 p.status_id, 
                 p.created_at, 
                 p.updated_at,
-                COALESCE(AVG(r.rating), 0) as average_rating,
+                CASE 
+                    WHEN COUNT(r.rating_id) = 0 THEN 5
+                    ELSE COALESCE(AVG(r.rating), 5)
+                END as average_rating,
                 COUNT(r.rating_id) as review_count
             FROM posts p
             LEFT JOIN rating r ON p.post_id = r.entity_id AND r.entity_type = 'post' AND r.status_id = 1
