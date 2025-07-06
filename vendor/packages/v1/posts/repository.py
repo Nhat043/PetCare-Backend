@@ -6,86 +6,77 @@ class PostRepository:
     def __init__(self):
         self.db = Database()
 
-    def get_post(self, post_id: int):
-        query = "SELECT * FROM posts WHERE post_id = %s"
-        result = self.db.execute_query_dict(query, (post_id,))
-        return result[0] if result else None
-
-    def get_posts_paginated(self, page: int = 1, limit: int = 10):
-        offset = (page - 1) * limit
-        query = "SELECT * FROM posts ORDER BY created_at DESC LIMIT %s OFFSET %s"
-        return self.db.execute_query_dict(query, (limit, offset))
-
-    def get_total_posts(self):
-        query = "SELECT COUNT(*) as total FROM posts"
-        return self.db.execute_query_dict(query)
-
     def get_posts(
         self,
-        user_id: Optional[int] = None,
-        category_id: Optional[int] = None,
-        status_id: Optional[int] = None,
-        title: Optional[str] = None,
+        user_id: int = None,
+        category_id: int = None,
+        status_id: int = None,
+        title: str = None,
         page: int = 1,
         limit: int = 10,
-    ) -> Dict[str, Any]:
-        """
-        Flexible search method that filters by any combination of parameters
-        """
-        # Build WHERE clause dynamically
-        conditions = []
+    ):
+        # Build WHERE clause based on filters
+        where_conditions = []
         params = []
 
-        if user_id is not None:
-            conditions.append("user_id = %s")
+        if user_id:
+            where_conditions.append("p.user_id = %s")
             params.append(user_id)
-
-        if category_id is not None:
-            conditions.append("category_id = %s")
+        if category_id:
+            where_conditions.append("p.category_id = %s")
             params.append(category_id)
-
-        if status_id is not None:
-            conditions.append("status_id = %s")
+        if status_id:
+            where_conditions.append("p.status_id = %s")
             params.append(status_id)
-
-        if title is not None:
-            conditions.append("title ILIKE %s")
+        if title:
+            where_conditions.append("p.title ILIKE %s")
             params.append(f"%{title}%")
 
-        # Build the query
-        where_clause = ""
-        if conditions:
-            where_clause = "WHERE " + " AND ".join(conditions)
+        where_clause = " AND ".join(where_conditions) if where_conditions else "1=1"
 
-        # Get total count for pagination
-        count_query = f"SELECT COUNT(*) as total FROM posts {where_clause}"
+        # Count total posts
+        count_query = f"SELECT COUNT(*) FROM posts p WHERE {where_clause}"
         total_result = self.db.execute_query_dict(count_query, tuple(params))
-        total = total_result[0]["total"] if total_result else 0
+        total = total_result[0]["count"] if total_result else 0
 
-        # Get paginated results
+        # Calculate pagination
         offset = (page - 1) * limit
-        search_query = f"""
-            SELECT * FROM posts 
-            {where_clause}
-            ORDER BY created_at DESC 
-            LIMIT %s OFFSET %s
-        """
-        search_params = params + [limit, offset]
-        posts = self.db.execute_query_dict(search_query, tuple(search_params))
-
-        # Calculate pagination info
         total_pages = (total + limit - 1) // limit
         has_next = page < total_pages
         has_prev = page > 1
 
+        # Get posts with ratings using LEFT JOIN
+        query = f"""
+            SELECT 
+                p.post_id, 
+                p.title, 
+                p.user_id, 
+                p.content_html, 
+                p.category_id, 
+                p.image_url, 
+                p.status_id, 
+                p.created_at, 
+                p.updated_at,
+                COALESCE(AVG(r.rating), 0) as average_rating,
+                COUNT(r.rating_id) as review_count
+            FROM posts p
+            LEFT JOIN rating r ON p.post_id = r.entity_id AND r.entity_type = 'post' AND r.status_id = 1
+            WHERE {where_clause}
+            GROUP BY p.post_id, p.title, p.user_id, p.content_html, p.category_id, p.image_url, p.status_id, p.created_at, p.updated_at
+            ORDER BY p.created_at DESC 
+            LIMIT %s OFFSET %s
+        """
+        params.extend([limit, offset])
+        posts = self.db.execute_query_dict(query, tuple(params))
+
         return {
             "posts": posts,
+            "page": page,
+            "limit": limit,
             "total": total,
             "total_pages": total_pages,
             "has_next": has_next,
             "has_prev": has_prev,
-            "page": page,
-            "limit": limit,
             "filters": {
                 "user_id": user_id,
                 "category_id": category_id,
@@ -93,6 +84,33 @@ class PostRepository:
                 "title": title,
             },
         }
+
+    def get_post(self, post_id: int):
+        query = """
+            SELECT 
+                p.post_id, 
+                p.title, 
+                p.user_id, 
+                p.content_html, 
+                p.category_id, 
+                p.image_url, 
+                p.status_id, 
+                p.created_at, 
+                p.updated_at,
+                COALESCE(AVG(r.rating), 0) as average_rating,
+                COUNT(r.rating_id) as review_count
+            FROM posts p
+            LEFT JOIN rating r ON p.post_id = r.entity_id AND r.entity_type = 'post' AND r.status_id = 1
+            WHERE p.post_id = %s
+            GROUP BY p.post_id, p.title, p.user_id, p.content_html, p.category_id, p.image_url, p.status_id, p.created_at, p.updated_at
+        """
+        result = self.db.execute_query_dict(query, (post_id,))
+        return result[0] if result else None
+
+    def get_total_posts(self):
+        query = "SELECT COUNT(*) as total FROM posts"
+        result = self.db.execute_query_dict(query)
+        return result[0]["total"] if result else 0
 
     def create_post(self, post: dict):
         query = """
@@ -110,7 +128,6 @@ class PostRepository:
                 post["status_id"],
             ),
         )
-        print("result", result)
         return result[0]["post_id"] if result else None
 
     def update_post(self, post_id: int, post: dict):

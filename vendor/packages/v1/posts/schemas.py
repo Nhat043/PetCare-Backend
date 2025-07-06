@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel
 
 
@@ -13,6 +13,17 @@ class PostBaseSchema(BaseModel):
     status_id: int
     created_at: datetime
     updated_at: datetime
+
+
+class PostResponseSchema(PostBaseSchema):
+    average_rating: Optional[float] = 0.0
+    review_count: Optional[int] = 0
+
+
+class PostSingleResponseSchema(PostBaseSchema):
+    average_rating: Optional[float] = 0.0
+    review_count: Optional[int] = 0
+    comments: List[str]
 
 
 class PostCreateSchema(BaseModel):
