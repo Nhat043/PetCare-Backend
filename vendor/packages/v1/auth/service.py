@@ -6,14 +6,17 @@ class AuthService:
     def __init__(self):
         self.repo = AuthRepository()
 
-    def get_user(self, email: str):
-        return self.repo.get_user(email)
+    def get_user_by_email(self, email: str):
+        return self.repo.get_user(email=email)
+
+    def get_user_by_id(self, user_id: int):
+        return self.repo.get_user(user_id=user_id)
 
     def get_users(self):
         return self.repo.get_users()
 
     def login(self, data: dict):
-        user = self.repo.get_user(data["email"])
+        user = self.repo.get_user(email=data["email"])
         if not user:
             return None
         password_hash = hash_password_md5(data["password"])
@@ -24,7 +27,7 @@ class AuthService:
         return user
 
     def check_duplicate_email(self, email: str):
-        return self.repo.get_user(email)
+        return self.repo.get_user(email=email)
 
     def create_user(self, data: dict):
         if self.check_duplicate_email(data["email"]):

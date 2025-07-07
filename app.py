@@ -8,6 +8,7 @@ from packages.v1.posts.routers import posts_routers
 from packages.v1.category.routers import category_routers
 from packages.v1.rating.routers import rating_routers
 from packages.v1.comment.routers import comment_routers
+from packages.v1.tag.routers import tag_routers
 
 cors_config = CORSConfig(
     allow_origin="*",
@@ -27,3 +28,4 @@ posts_routers(app, prefix="/v1/posts", cors=cors_config)
 category_routers(app, prefix="/v1/category", cors=cors_config)
 rating_routers(app, prefix="/v1/rating", cors=cors_config)
 comment_routers(app, prefix="/v1/comment", cors=cors_config)
+tag_routers(app, prefix="/v1/tag", cors=cors_config)

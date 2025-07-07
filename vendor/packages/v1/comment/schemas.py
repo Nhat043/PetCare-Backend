@@ -14,6 +14,10 @@ class CommentBaseSchema(BaseModel):
     updated_at: datetime
 
 
+class CommentResponseSchema(CommentBaseSchema):
+    full_name: str
+
+
 class CommentCreateSchema(BaseModel):
     user_id: int
     entity_type: str

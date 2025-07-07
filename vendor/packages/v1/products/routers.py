@@ -2,7 +2,7 @@ from chalice import Response
 from packages.v1.products.service import ProductService
 from packages.v1.products.schemas import (
     ProductCreateSchema,
-    ProductBaseSchema,
+    ProductResponseSchema,
     serialize_product,
 )
 from pydantic import ValidationError
@@ -15,19 +15,77 @@ def products_routers(app, prefix, cors=None):
         page = int(app.current_request.query_params.get("page", 1))
         limit = int(app.current_request.query_params.get("limit", 10))
 
+        # Get filter parameters from query string
+        name = app.current_request.query_params.get("name")
+        category_id = app.current_request.query_params.get("category_id")
+        status_id = app.current_request.query_params.get("status_id")
+        tag_id = app.current_request.query_params.get("tag_id")
+        min_price = app.current_request.query_params.get("min_price")
+        max_price = app.current_request.query_params.get("max_price")
+
         # Validate pagination parameters
         if page < 1:
             page = 1
         if limit < 1 or limit > 100:  # Set reasonable limits
             limit = 10
 
+        # Convert filter parameters to appropriate types
+        if category_id:
+            try:
+                category_id = int(category_id)
+            except ValueError:
+                return Response(
+                    body={"error": "Invalid category_id parameter"}, status_code=400
+                )
+
+        if status_id:
+            try:
+                status_id = int(status_id)
+            except ValueError:
+                return Response(
+                    body={"error": "Invalid status_id parameter"}, status_code=400
+                )
+
+        if min_price:
+            try:
+                min_price = float(min_price)
+            except ValueError:
+                return Response(
+                    body={"error": "Invalid min_price parameter"}, status_code=400
+                )
+
+        if max_price:
+            try:
+                max_price = float(max_price)
+            except ValueError:
+                return Response(
+                    body={"error": "Invalid max_price parameter"}, status_code=400
+                )
+
+        if tag_id:
+            try:
+                tag_id = int(tag_id)
+            except ValueError:
+                return Response(
+                    body={"error": "Invalid tag_id parameter"}, status_code=400
+                )
+
         product_service = ProductService()
-        result = product_service.get_products_paginated(page=page, limit=limit)
+        result = product_service.get_products_paginated(
+            page=page,
+            limit=limit,
+            name=name,
+            category_id=category_id,
+            status_id=status_id,
+            min_price=min_price,
+            max_price=max_price,
+            tag_id=tag_id,
+        )
 
         return Response(
             body={
                 "products": [
-                    serialize_product(ProductBaseSchema(**product).model_dump())
+                    serialize_product(ProductResponseSchema(**product).model_dump())
                     for product in result["products"]
                 ],
                 "pagination": {
@@ -38,6 +96,7 @@ def products_routers(app, prefix, cors=None):
                     "has_next": result["has_next"],
                     "has_prev": result["has_prev"],
                 },
+                "filters": result["filters"],
             }
         )
 
@@ -49,7 +108,9 @@ def products_routers(app, prefix, cors=None):
             return Response(status_code=404, body={"error": "Product not found"})
         return Response(
             body={
-                "product": serialize_product(ProductBaseSchema(**product).model_dump())
+                "product": serialize_product(
+                    ProductResponseSchema(**product).model_dump()
+                )
             }
         )
 

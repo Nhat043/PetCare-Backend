@@ -20,10 +20,13 @@ class PostService:
         category_id: int = None,
         status_id: int = None,
         title: str = None,
+        tag_id: int = None,
         page: int = 1,
         limit: int = 10,
     ):
-        return self.repo.get_posts(user_id, category_id, status_id, title, page, limit)
+        return self.repo.get_posts(
+            user_id, category_id, status_id, tag_id, title, page, limit
+        )
 
     def get_post(self, post_id: int):
         return self.repo.get_post(post_id)

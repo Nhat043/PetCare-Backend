@@ -11,10 +11,16 @@ def auth_routers(app, prefix, cors=None):
         users = auth_service.get_users()
         return Response(body={"users": [serialize_user(user) for user in users]})
 
-    @app.route(f"{prefix}/{{email}}", methods=["GET"], cors=cors)
-    def get_user(email):
+    @app.route(f"{prefix}/email/{{email}}", methods=["GET"], cors=cors)
+    def get_user_by_email(email):
         auth_service = AuthService()
-        user = auth_service.get_user(email)
+        user = auth_service.get_user_by_email(email)
+        return Response(body={"user": serialize_user(user)})
+
+    @app.route(f"{prefix}/id/{{user_id}}", methods=["GET"], cors=cors)
+    def get_user_by_id(user_id):
+        auth_service = AuthService()
+        user = auth_service.get_user_by_id(user_id)
         return Response(body={"user": serialize_user(user)})
 
     @app.route(f"{prefix}/login", methods=["POST"], cors=cors)
@@ -35,6 +41,7 @@ def auth_routers(app, prefix, cors=None):
                 body={
                     "message": "Login successful",
                     "user_id": user["user_id"],
+                    "full_name": user["full_name"],
                     "role_id": user["role_id"],
                 }
             )

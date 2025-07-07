@@ -8,8 +8,9 @@ class CommentRepository:
     def get_comment_paginated(self, page: int = 1, limit: int = 10):
         # Get comments with pagination
         comments_query = """
-            SELECT * FROM comment 
-            WHERE status_id = 1
+            SELECT c.*, u.full_name FROM comment c
+            LEFT JOIN users u ON c.user_id = u.user_id
+            WHERE c.status_id = 1
             ORDER BY created_at DESC 
             LIMIT %s OFFSET %s
         """
@@ -36,7 +37,7 @@ class CommentRepository:
         }
 
     def get_comment(self, page: int = 1, limit: int = 10):
-        query = "SELECT * FROM comment WHERE status_id = 1 LIMIT %s OFFSET %s"
+        query = "SELECT c.*, u.full_name FROM comment c LEFT JOIN users u ON c.user_id = u.user_id WHERE c.status_id = 1 LIMIT %s OFFSET %s"
         return self.db.execute_query_dict(query, (limit, (page - 1) * limit))
 
     def get_comment_by_entity_id_paginated(
@@ -48,8 +49,9 @@ class CommentRepository:
     ):
         # Get comments with pagination
         comments_query = """
-            SELECT * FROM comment 
-            WHERE entity_type = %s AND entity_id = %s AND status_id = 1
+            SELECT c.*, u.full_name FROM comment c
+            LEFT JOIN users u ON c.user_id = u.user_id
+            WHERE entity_type = %s AND entity_id = %s AND c.status_id = 1
             ORDER BY created_at DESC 
             LIMIT %s OFFSET %s
         """
@@ -82,7 +84,7 @@ class CommentRepository:
         page: int = 1,
         limit: int = 10,
     ):
-        query = "SELECT * FROM comment WHERE entity_type = %s AND entity_id = %s AND status_id = 1 LIMIT %s OFFSET %s"
+        query = "SELECT c.*, u.full_name FROM comment c LEFT JOIN users u ON c.user_id = u.user_id WHERE entity_type = %s AND entity_id = %s AND c.status_id = 1 LIMIT %s OFFSET %s"
         return self.db.execute_query_dict(
             query, (entity_type, entity_id, limit, (page - 1) * limit)
         )
@@ -92,8 +94,9 @@ class CommentRepository:
     ):
         # Get comments with pagination
         comments_query = """
-            SELECT * FROM comment 
-            WHERE entity_type = %s AND user_id = %s AND status_id = 1
+            SELECT c.*, u.full_name FROM comment c
+            LEFT JOIN users u ON c.user_id = u.user_id
+            WHERE entity_type = %s AND user_id = %s AND c.status_id = 1
             ORDER BY created_at DESC 
             LIMIT %s OFFSET %s
         """
@@ -122,7 +125,7 @@ class CommentRepository:
     def get_comment_by_user_id(
         self, entity_type: str, user_id: int, page: int = 1, limit: int = 10
     ):
-        query = "SELECT * FROM comment WHERE entity_type = %s AND user_id = %s AND status_id = 1 LIMIT %s OFFSET %s"
+        query = "SELECT c.*, u.full_name FROM comment c LEFT JOIN users u ON c.user_id = u.user_id WHERE entity_type = %s AND user_id = %s AND c.status_id = 1 LIMIT %s OFFSET %s"
         return self.db.execute_query_dict(
             query, (entity_type, user_id, limit, (page - 1) * limit)
         )
