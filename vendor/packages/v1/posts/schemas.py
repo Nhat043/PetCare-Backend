@@ -40,6 +40,15 @@ class PostCreateSchema(BaseModel):
     status_id: int = 1
 
 
+class PostUpdateSchema(BaseModel):
+    title: Optional[str] = None
+    content_html: Optional[str] = None
+    category_id: Optional[int] = None
+    tag_id: Optional[int] = None
+    image_url: Optional[str] = None
+    status_id: Optional[int] = None
+
+
 class PostImageSchema(BaseModel):
     image_url: str
 

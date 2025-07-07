@@ -129,7 +129,6 @@ class PostRepository:
             LEFT JOIN rating r ON p.post_id = r.entity_id AND r.entity_type = 'post' AND r.status_id = 1
             WHERE p.post_id = %s
             GROUP BY p.post_id, p.title, p.user_id, p.content_html, p.category_id, p.image_url, p.status_id, p.tag_id, p.created_at, p.updated_at, c.category_name, t.tag_name, ps.status_name
-            ORDER BY p.average_rating DESC
         """
         result = self.db.execute_query_dict(query, (post_id,))
         return result[0] if result else None
@@ -159,18 +158,28 @@ class PostRepository:
         return result[0]["post_id"] if result else None
 
     def update_post(self, post_id: int, post: dict):
-        query = "UPDATE posts SET title = %s, content_html = %s, category_id = %s, image_url = %s, status_id = %s WHERE post_id = %s"
-        self.db.execute_query(
-            query,
-            (
-                post["title"],
-                post["content_html"],
-                post["category_id"],
-                post["image_url"],
-                post["status_id"],
-                post_id,
-            ),
-        )
+        # Only update fields that are present in the input dict (not None)
+        allowed_fields = [
+            "title",
+            "content_html",
+            "category_id",
+            "image_url",
+            "status_id",
+            "tag_id",
+        ]
+        set_clauses = []
+        params = []
+        for field in allowed_fields:
+            if field in post and post[field] is not None:
+                set_clauses.append(f"{field} = %s")
+                params.append(post[field])
+        if not set_clauses:
+            # No fields to update
+            return None
+        set_clause = ", ".join(set_clauses)
+        query = f"UPDATE posts SET {set_clause} WHERE post_id = %s"
+        params.append(post_id)
+        self.db.execute_query(query, tuple(params))
         result = self.db.execute_query_dict(
             """
             SELECT 
