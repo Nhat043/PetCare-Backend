@@ -35,6 +35,7 @@ class PostCreateSchema(BaseModel):
     title: str
     content_html: str
     category_id: int
+    tag_id: int
     image_url: Optional[str] = None
     status_id: int = 1
 

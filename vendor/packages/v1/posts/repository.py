@@ -77,7 +77,7 @@ class PostRepository:
             LEFT JOIN rating r ON p.post_id = r.entity_id AND r.entity_type = 'post' AND r.status_id = 1
             WHERE {where_clause}
             GROUP BY p.post_id, p.title, p.user_id, p.content_html, p.category_id, p.image_url, p.status_id, p.tag_id, p.created_at, p.updated_at, c.category_name, t.tag_name, ps.status_name
-            ORDER BY p.created_at DESC 
+            ORDER BY average_rating DESC, p.created_at DESC 
             LIMIT %s OFFSET %s
         """
         params.extend([limit, offset])
@@ -141,8 +141,8 @@ class PostRepository:
 
     def create_post(self, post: dict):
         query = """
-            INSERT INTO posts (title, user_id, content_html, category_id, image_url, status_id) 
-            VALUES (%s, %s, %s, %s, %s, %s) RETURNING post_id
+            INSERT INTO posts (title, user_id, content_html, category_id, image_url, status_id, tag_id) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING post_id
         """
         result = self.db.execute_query_dict_returning(
             query,
@@ -153,6 +153,7 @@ class PostRepository:
                 post["category_id"],
                 post["image_url"],
                 post["status_id"],
+                post["tag_id"],
             ),
         )
         return result[0]["post_id"] if result else None

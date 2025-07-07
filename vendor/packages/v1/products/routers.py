@@ -6,6 +6,7 @@ from packages.v1.products.schemas import (
     serialize_product,
 )
 from pydantic import ValidationError
+import base64
 
 
 def products_routers(app, prefix, cors=None):
@@ -128,6 +129,52 @@ def products_routers(app, prefix, cors=None):
         if product is None:
             return Response(body={"error": "Product created failed"}, status_code=400)
         return Response(body={"product_id": product}, status_code=201)
+
+    @app.route(f"{prefix}/upload-base64", methods=["POST"], cors=cors)
+    def upload_base64_image():
+        """
+        Handle base64-encoded image upload to S3
+        Expects JSON with 'image_data' and 'filename' fields
+        """
+        product_service = ProductService()
+
+        try:
+            data = app.current_request.json_body
+            image_data = data.get("image_data")
+            filename = data.get("filename", "image.jpg")
+
+            if not image_data:
+                return Response(
+                    body={"error": "No image data provided"}, status_code=400
+                )
+
+            # Decode base64 image
+            try:
+                image_bytes = base64.b64decode(image_data)
+            except Exception as e:
+                return Response(
+                    body={"error": "Invalid base64 image data"}, status_code=400
+                )
+
+            # Upload to S3
+            s3_url = product_service.upload_file_to_s3(image_bytes, filename)
+
+            if s3_url is None:
+                return Response(
+                    body={"error": "Failed to upload image to S3"}, status_code=500
+                )
+
+            return Response(
+                body={
+                    "message": "Image uploaded successfully",
+                    "s3_url": s3_url,
+                    "filename": filename,
+                },
+                status_code=201,
+            )
+
+        except Exception as e:
+            return Response(body={"error": f"Upload failed: {str(e)}"}, status_code=500)
 
     @app.route(f"{prefix}/{{product_id}}", methods=["DELETE"], cors=cors)
     def delete_product(product_id):

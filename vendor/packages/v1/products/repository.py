@@ -1,5 +1,4 @@
 from packages.core.database.postgresql import Database
-from .schemas import ProductCreateSchema
 
 
 class ProductRepository:
@@ -82,7 +81,7 @@ class ProductRepository:
             LEFT JOIN rating r ON p.product_id = r.entity_id AND r.entity_type = 'product' AND r.status_id = 1
             WHERE {where_clause}
             GROUP BY p.product_id, p.name, p.description, p.price, p.stock, p.category_id, p.status_id, p.tag_id, p.image_url, p.created_at, p.updated_at, c.category_name, t.tag_name, ps.status_name
-            ORDER BY p.created_at DESC 
+            ORDER BY average_rating DESC, p.created_at DESC 
             LIMIT %s OFFSET %s
         """
         params.extend([limit, offset])
@@ -132,6 +131,7 @@ class ProductRepository:
             LEFT JOIN product_status ps ON p.status_id = ps.status_id
             LEFT JOIN rating r ON p.product_id = r.entity_id AND r.entity_type = 'product' AND r.status_id = 1
             GROUP BY p.product_id, p.name, p.description, p.price, p.stock, p.category_id, p.status_id, p.tag_id, p.image_url, p.created_at, p.updated_at, c.category_name, t.tag_name, ps.status_name
+            ORDER BY average_rating DESC, p.created_at DESC 
         """
         result = self.db.execute_query_dict(query)
         return result
@@ -165,15 +165,15 @@ class ProductRepository:
             LEFT JOIN rating r ON p.product_id = r.entity_id AND r.entity_type = 'product' AND r.status_id = 1
             WHERE p.product_id = %s
             GROUP BY p.product_id, p.name, p.description, p.price, p.stock, p.category_id, p.status_id, p.tag_id, p.image_url, p.created_at, p.updated_at, c.category_name, t.tag_name, ps.status_name
-            ORDER BY p.average_rating DESC
+            ORDER BY average_rating DESC, p.created_at DESC 
         """
         result = self.db.execute_query_dict(query, (product_id,))
         return result[0] if result else None
 
     def create_product(self, product: dict):
         query = """
-            INSERT INTO products (name, description, price, stock, category_id, status_id, image_url) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING product_id
+            INSERT INTO products (name, description, price, stock, category_id, status_id, image_url, tag_id) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING product_id
         """
         result = self.db.execute_query_dict_returning(
             query,
@@ -185,6 +185,7 @@ class ProductRepository:
                 product.get("category_id"),
                 product.get("status_id"),
                 product.get("image_url"),
+                product.get("tag_id"),
             ),
         )
         print("result", result)
