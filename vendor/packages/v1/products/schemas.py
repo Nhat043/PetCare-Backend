@@ -11,9 +11,18 @@ class ProductBaseSchema(BaseModel):
     stock: int
     category_id: int
     status_id: int
+    tag_id: int
     image_url: Optional[str] = None
     created_at: datetime
     updated_at: datetime
+
+
+class ProductResponseSchema(ProductBaseSchema):
+    category_name: str
+    status_name: str
+    tag_name: str
+    average_rating: Optional[float] = 0.0
+    review_count: Optional[int] = 0
 
 
 class ProductCreateSchema(BaseModel):

@@ -20,6 +20,7 @@ def posts_routers(app, prefix, cors=None):
         category_id = app.current_request.query_params.get("category_id")
         status_id = app.current_request.query_params.get("status_id")
         title = app.current_request.query_params.get("title")
+        tag_id = app.current_request.query_params.get("tag_id")
         page = int(app.current_request.query_params.get("page", 1))
         limit = int(app.current_request.query_params.get("limit", 10))
 
@@ -30,13 +31,20 @@ def posts_routers(app, prefix, cors=None):
             category_id = int(category_id)
         if status_id:
             status_id = int(status_id)
-
+        if tag_id:
+            try:
+                tag_id = int(tag_id)
+            except ValueError:
+                return Response(
+                    body={"error": "Invalid tag_id parameter"}, status_code=400
+                )
         post_service = PostService()
         result = post_service.get_posts(
             user_id=user_id,
             category_id=category_id,
             status_id=status_id,
             title=title,
+            tag_id=tag_id,
             page=page,
             limit=limit,
         )

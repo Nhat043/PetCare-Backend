@@ -3,6 +3,7 @@ from packages.v1.comment.schemas import (
     serialize_comment,
     CommentBaseSchema,
     CommentCreateSchema,
+    CommentResponseSchema,
 )
 from chalice import Response
 from pydantic import ValidationError
@@ -21,7 +22,7 @@ def comment_routers(app, prefix, cors=None):
         return Response(
             body={
                 "comments": [
-                    serialize_comment(CommentBaseSchema(**comment))
+                    serialize_comment(CommentResponseSchema(**comment))
                     for comment in result["comments"]
                 ],
                 "total": result["total"],
@@ -47,7 +48,7 @@ def comment_routers(app, prefix, cors=None):
         return Response(
             body={
                 "comments": [
-                    serialize_comment(CommentBaseSchema(**comment))
+                    serialize_comment(CommentResponseSchema(**comment))
                     for comment in result["comments"]
                 ],
                 "total": result["total"],
@@ -72,7 +73,7 @@ def comment_routers(app, prefix, cors=None):
         return Response(
             body={
                 "comments": [
-                    serialize_comment(CommentBaseSchema(**comment))
+                    serialize_comment(CommentResponseSchema(**comment))
                     for comment in result["comments"]
                 ],
                 "total": result["total"],

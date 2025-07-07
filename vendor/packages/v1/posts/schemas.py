@@ -11,11 +11,15 @@ class PostBaseSchema(BaseModel):
     category_id: int
     image_url: Optional[str] = None
     status_id: int
+    tag_id: int
     created_at: datetime
     updated_at: datetime
 
 
 class PostResponseSchema(PostBaseSchema):
+    category_name: str
+    status_name: str
+    tag_name: str
     average_rating: Optional[float] = 0.0
     review_count: Optional[int] = 0
 
