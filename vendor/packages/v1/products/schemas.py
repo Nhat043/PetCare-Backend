@@ -31,6 +31,7 @@ class ProductCreateSchema(BaseModel):
     price: float
     stock: int = 0
     category_id: int
+    tag_id: int
     status_id: int = 1
     image_url: Optional[str] = None
 
