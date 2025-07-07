@@ -9,6 +9,7 @@ from packages.v1.posts.schemas import (
     PostCreateSchema,
     PostImageSchema,
     serialize_post,
+    PostUpdateSchema,
 )
 
 
@@ -92,6 +93,21 @@ def posts_routers(app, prefix, cors=None):
             return Response(body={"error": "Post created failed"}, status_code=400)
         else:
             return Response(body={"post_id": post}, status_code=201)
+
+    @app.route(f"{prefix}/{{post_id}}", methods=["PUT"], cors=cors)
+    def update_post(post_id):
+        post_service = PostService()
+        data = app.current_request.json_body
+        try:
+            schema = PostUpdateSchema(**data)
+        except ValidationError as e:
+            return Response(
+                body={"error": "Invalid input", "details": e.errors()}, status_code=400
+            )
+        post = post_service.update_post(int(post_id), schema.model_dump())
+        if post is None:
+            return Response(status_code=404, body={"error": "Post not found"})
+        return Response(body={"message": "Post updated successfully"}, status_code=200)
 
     @app.route(f"{prefix}/{{post_id}}", methods=["DELETE"], cors=cors)
     def delete_post(post_id):

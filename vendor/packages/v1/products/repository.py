@@ -165,7 +165,6 @@ class ProductRepository:
             LEFT JOIN rating r ON p.product_id = r.entity_id AND r.entity_type = 'product' AND r.status_id = 1
             WHERE p.product_id = %s
             GROUP BY p.product_id, p.name, p.description, p.price, p.stock, p.category_id, p.status_id, p.tag_id, p.image_url, p.created_at, p.updated_at, c.category_name, t.tag_name, ps.status_name
-            ORDER BY average_rating DESC, p.created_at DESC 
         """
         result = self.db.execute_query_dict(query, (product_id,))
         return result[0] if result else None

@@ -16,6 +16,11 @@ class UserBaseSchema(BaseModel):
     updated_at: datetime
 
 
+class UserResponseSchema(UserBaseSchema):
+    role_name: str
+    status_name: str
+
+
 class UserCreateSchema(BaseModel):
     email: str
     password: str

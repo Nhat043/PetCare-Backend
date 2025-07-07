@@ -12,8 +12,10 @@ class AuthService:
     def get_user_by_id(self, user_id: int):
         return self.repo.get_user(user_id=user_id)
 
-    def get_users(self):
-        return self.repo.get_users()
+    def get_users(self, page=1, limit=10, role_id=None, status_id=None, email=None):
+        return self.repo.get_users(
+            page=page, limit=limit, role_id=role_id, status_id=status_id, email=email
+        )
 
     def login(self, data: dict):
         user = self.repo.get_user(email=data["email"])

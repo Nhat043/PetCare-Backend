@@ -1,6 +1,11 @@
 from chalice import Response
 from packages.v1.auth.service import AuthService
-from packages.v1.auth.schemas import LoginSchema, UserCreateSchema, serialize_user
+from packages.v1.auth.schemas import (
+    LoginSchema,
+    UserCreateSchema,
+    UserResponseSchema,
+    serialize_user,
+)
 from pydantic import ValidationError
 
 
@@ -8,8 +13,22 @@ def auth_routers(app, prefix, cors=None):
     @app.route(prefix, methods=["GET"], cors=cors)
     def get_users():
         auth_service = AuthService()
-        users = auth_service.get_users()
-        return Response(body={"users": [serialize_user(user) for user in users]})
+        request = app.current_request
+        # Get query params with defaults
+        page = int(request.query_params.get("page", 1)) if request.query_params else 1
+        limit = (
+            int(request.query_params.get("limit", 10)) if request.query_params else 10
+        )
+        role_id = request.query_params.get("role_id") if request.query_params else None
+        status_id = (
+            request.query_params.get("status_id") if request.query_params else None
+        )
+        email = request.query_params.get("email") if request.query_params else None
+
+        users_data = auth_service.get_users(
+            page=page, limit=limit, role_id=role_id, status_id=status_id, email=email
+        )
+        return Response(body=users_data)
 
     @app.route(f"{prefix}/email/{{email}}", methods=["GET"], cors=cors)
     def get_user_by_email(email):
