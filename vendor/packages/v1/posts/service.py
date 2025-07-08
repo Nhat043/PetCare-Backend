@@ -128,6 +128,11 @@ class PostService:
             return None
 
     def update_post(self, post_id: int, post: dict):
+        post_data = self.get_post(post_id)
+        if post_data is None:
+            return None
+        if post.get("image_url"):
+            post["image_url"] = self.upload_image(post["image_url"])
         return self.repo.update_post(post_id, post)
 
     def delete_post(self, post_id: int):

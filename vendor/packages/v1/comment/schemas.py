@@ -16,6 +16,7 @@ class CommentBaseSchema(BaseModel):
 
 class CommentResponseSchema(CommentBaseSchema):
     full_name: str
+    status_name: str
 
 
 class CommentCreateSchema(BaseModel):
@@ -24,6 +25,11 @@ class CommentCreateSchema(BaseModel):
     entity_id: int
     comment: str
     status_id: int = 1
+
+
+class CommentUpdateSchema(BaseModel):
+    comment: Optional[str] = None
+    status_id: Optional[int] = None
 
 
 def serialize_comment(comment):

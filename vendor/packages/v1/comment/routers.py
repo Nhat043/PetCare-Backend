@@ -3,6 +3,7 @@ from packages.v1.comment.schemas import (
     serialize_comment,
     CommentBaseSchema,
     CommentCreateSchema,
+    CommentUpdateSchema,
     CommentResponseSchema,
 )
 from chalice import Response
@@ -16,7 +17,7 @@ def comment_routers(app, prefix, cors=None):
         page = int(query_params.get("page", 1))
         limit = int(query_params.get("limit", 10))
         comment_service = CommentService()
-        result = comment_service.get_comment(page, limit)
+        result = comment_service.get_all_comments(page, limit)
         if not result["comments"]:
             return Response(body={"message": "No comment found"}, status_code=200)
         return Response(
@@ -96,6 +97,26 @@ def comment_routers(app, prefix, cors=None):
         comment_service = CommentService()
         result = comment_service.create_comment(schema.model_dump())
         return Response(body={"comment_id": result}, status_code=201)
+
+    @app.route(f"{prefix}/update/{{comment_id}}", methods=["PUT"], cors=cors)
+    def update_comment(comment_id):
+        data = app.current_request.json_body
+        try:
+            schema = CommentUpdateSchema(**data)
+        except ValidationError as e:
+            return Response(
+                body={"error": "Invalid input", "details": e.errors()}, status_code=400
+            )
+        print(schema.model_dump(exclude_none=True))
+        comment_service = CommentService()
+        result = comment_service.update_comment(
+            int(comment_id), schema.model_dump(exclude_none=True)
+        )
+        if result is None:
+            return Response(body={"message": "Comment not found"}, status_code=404)
+        return Response(
+            body={"message": "Comment updated successfully"}, status_code=200
+        )
 
     @app.route(f"{prefix}/{{entity_type}}/{{entity_id}}", methods=["DELETE"], cors=cors)
     def delete_comment_by_entity_id(entity_type, entity_id):

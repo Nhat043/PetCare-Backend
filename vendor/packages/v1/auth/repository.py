@@ -34,7 +34,7 @@ class AuthRepository:
         query = f"""SELECT u.*, r.role_name, s.status_name
             FROM users u
             LEFT JOIN roles r ON u.role_id = r.role_id
-            LEFT JOIN statuses s ON u.status_id = s.status_id
+            LEFT JOIN user_status s ON u.status_id = s.status_id
             WHERE {where_clause}
             ORDER BY u.created_at DESC
             LIMIT %s OFFSET %s

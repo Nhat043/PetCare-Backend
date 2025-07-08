@@ -5,8 +5,8 @@ class CommentService:
     def __init__(self):
         self.repo = CommentRepository()
 
-    def get_comment(self, page: int = 1, limit: int = 10):
-        return self.repo.get_comment_paginated(page, limit)
+    def get_all_comments(self, page: int = 1, limit: int = 10):
+        return self.repo.get_all_comments_paginated(page, limit)
 
     def get_comment_by_entity_id(
         self, entity_type: str, entity_id: int, page: int = 1, limit: int = 10
@@ -27,3 +27,8 @@ class CommentService:
 
     def delete_comment_by_entity_id(self, entity_type: str, entity_id: int):
         return self.repo.delete_comment_by_entity_id(entity_type, entity_id)
+
+    def update_comment(self, comment_id: int, comment: dict):
+        if self.repo.get_comment_by_id(comment_id) is None:
+            return None
+        return self.repo.update_comment(comment_id, comment)

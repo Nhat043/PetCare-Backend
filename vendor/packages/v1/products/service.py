@@ -22,6 +22,9 @@ class ProductService:
     def create_product(self, product: dict):
         return self.repo.create_product(product)
 
+    def update_product(self, product_id: int, product: dict):
+        return self.repo.update_product(product_id, product)
+
     def get_products_paginated(
         self,
         page: int = 1,
