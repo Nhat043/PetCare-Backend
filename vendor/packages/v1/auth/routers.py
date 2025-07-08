@@ -28,7 +28,21 @@ def auth_routers(app, prefix, cors=None):
         users_data = auth_service.get_users(
             page=page, limit=limit, role_id=role_id, status_id=status_id, email=email
         )
-        return Response(body=users_data)
+        return Response(
+            body={
+                "users": [
+                    serialize_user(UserResponseSchema(**user))
+                    for user in users_data["users"]
+                ],
+                "page": users_data["page"],
+                "limit": users_data["limit"],
+                "total": users_data["total"],
+                "total_pages": users_data["total_pages"],
+                "has_next": users_data["has_next"],
+                "has_prev": users_data["has_prev"],
+                "filters": users_data["filters"],
+            }
+        )
 
     @app.route(f"{prefix}/email/{{email}}", methods=["GET"], cors=cors)
     def get_user_by_email(email):
@@ -62,6 +76,7 @@ def auth_routers(app, prefix, cors=None):
                     "user_id": user["user_id"],
                     "full_name": user["full_name"],
                     "role_id": user["role_id"],
+                    "status_id": user["status_id"],
                 }
             )
 
